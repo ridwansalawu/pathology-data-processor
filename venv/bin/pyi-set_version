@@ -1,4 +1,4 @@
-#!/Users/ridwansalawu/Library/CloudStorage/OneDrive-Personal/reedyPathologyApp/venv/bin/python3
+#!/Users/ridwansalawu/reedyProjects/reedyPathologyApp/venv/bin/python3
 import sys
 from PyInstaller.utils.cliutils.set_version import run
 if __name__ == '__main__':

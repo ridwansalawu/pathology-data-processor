@@ -1,0 +1,5 @@
+pandas
+openpyxl
+flask
+gunicorn
+pyinstaller

@@ -29,6 +29,8 @@ def produce(begins, ends, file_path, file_output):
     
     
     import pandas as pd
+    import openpyxl
+    from tkinter import filedialog
     # import the excel as a dataframe
     labs_raw = pd.read_excel(file_path)
     # preserve the raw data, make a copy as draft

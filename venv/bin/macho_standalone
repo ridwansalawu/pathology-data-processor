@@ -1,4 +1,4 @@
-#!/Users/ridwansalawu/Library/CloudStorage/OneDrive-Personal/reedyPathologyApp/venv/bin/python3
+#!/Users/ridwansalawu/reedyProjects/reedyPathologyApp/venv/bin/python3
 import sys
 from macholib.macho_standalone import main
 if __name__ == '__main__':

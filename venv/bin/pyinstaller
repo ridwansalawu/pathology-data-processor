@@ -1,4 +1,4 @@
-#!/Users/ridwansalawu/Library/CloudStorage/OneDrive-Personal/reedyPathologyApp/venv/bin/python3
+#!/Users/ridwansalawu/reedyProjects/reedyPathologyApp/venv/bin/python3
 import sys
 from PyInstaller.__main__ import _console_script_run
 if __name__ == '__main__':
