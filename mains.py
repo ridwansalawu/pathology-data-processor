@@ -1,6 +1,6 @@
 # mains
 
-def produce(begins, ends, file_path, file_output):
+def produce(begins, ends, file_path, file_output, progress_callback=None):
     
     
     required_bloods = [ 
@@ -107,6 +107,36 @@ def produce(begins, ends, file_path, file_output):
     specimen.insert(0, 'Serial No.', range(1, len(specimen) + 1))
     
     final_specimen = specimen.copy()
+
+
+    total_rows = len(final_specimen)
+    for i, row_index in enumerate(final_specimen.index, start=1):
+        # --- Apply normal range logic as before ---
+        # Example for HB
+        final_specimen.at[row_index, 'HB_normal'] = (
+            "Y" if pd.notna(final_specimen.at[row_index, 'HB']) and 160 >= float(final_specimen.at[row_index, 'HB']) >= 115 else "N"
+        )
+        # Add other tests similarly...
+        
+        # --- REPORT PROGRESS ---
+        if progress_callback:
+            progress_callback(i / total_rows * 100)  # send % completed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # return final_specimen
     ########################################################################################################################################
     

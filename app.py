@@ -7,7 +7,7 @@ import threading
 import queue
 import time
 
-from mains import produce  # Your existing processing function
+from mains import produce  # your existing processing function
 
 # --- Global queue for logs ---
 log_queue = queue.Queue()
@@ -35,26 +35,31 @@ class ProcessingWindow(Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title("Processing...")
-        self.geometry("500x350")
+        self.geometry("500x400")
         self.resizable(False, False)
 
         Label(self, text="Processing file, please wait…", font=("Helvetica", 12)).pack(pady=10)
 
-        # Spinner
+        # Spinner (indeterminate)
         self.spinner = ttk.Progressbar(self, mode="indeterminate")
         self.spinner.pack(fill="x", padx=20)
         self.spinner.start(10)
 
-        # Progress bar (optional)
-        self.progress = ttk.Progressbar(self, mode="determinate", maximum=100)
+        # Determinate progress bar
+        style = ttk.Style()
+        style.theme_use('default')
+        style.configure("TProgressbar", thickness=20, troughcolor="#2c2c2c", background="#4a90e2")
+        self.progress = ttk.Progressbar(self, style="TProgressbar", mode="determinate", maximum=100)
         self.progress.pack(fill="x", padx=20, pady=5)
 
-        # Log window
+        # Logging window
         self.log_box = Text(self, height=10, state="disabled")
         self.log_box.pack(fill="both", expand=True, padx=10, pady=10)
 
+        # Cancel button
         Button(self, text="Cancel", command=self.cancel).pack(pady=5)
 
+        # Poll log queue
         self.after(100, self.poll_log_queue)
 
     def poll_log_queue(self):
@@ -71,23 +76,24 @@ class ProcessingWindow(Toplevel):
             request_cancel()
 
 # --- Threaded produce ---
-def run_produce_thread(begins, ends, input_file, output_file, on_done):
+def run_produce_thread(begins, ends, input_file, output_file, progress_bar, on_done):
     global cancel_requested
     cancel_requested = False
     try:
-        log("Starting processing…")
-        time.sleep(0.2)
+        def progress_callback(percent):
+            if cancel_requested:
+                raise Exception("Processing cancelled by user")
+            progress_bar["value"] = percent
 
-        if cancel_requested:
-            log("Processing cancelled by user.")
-            on_done(False, "Processing cancelled.")
-            return
+        log("Starting processing…")
+        time.sleep(0.1)
 
         produce(
             begins=begins,
             ends=ends,
             file_path=input_file,
-            file_output=output_file
+            file_output=output_file,
+            progress_callback=progress_callback
         )
 
         log("Processing completed successfully.")
@@ -167,7 +173,7 @@ def main():
         # ---- Start thread ----
         thread = threading.Thread(
             target=run_produce_thread,
-            args=(begins, ends, input_file, output_file, on_done),
+            args=(begins, ends, input_file, output_file, processing_window.progress, on_done),
             daemon=True
         )
         thread.start()
@@ -181,151 +187,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-# import sys
-# import traceback
-# from tkinter import Tk, filedialog, messagebox, simpledialog
-# from mains import produce
-
-# from datetime import datetime
-
-# import threading
-# import queue
-# import time
-# from tkinter import *
-# from tkinter import ttk, messagebox
-
-
-# def validate_date(date_str: str) -> bool:
-#     try:
-#         datetime.strptime(date_str, "%d/%m/%Y")
-#         return True
-#     except ValueError:
-#         return False
-
-
-# from tkcalendar import Calendar
-
-# def pick_date(title: str, parent) -> str:
-#     top = Tk()
-#     top.title(title)
-
-#     cal = Calendar(
-#         top,
-#         selectmode="day",
-#         date_pattern="dd/mm/yyyy"
-#     )
-#     cal.pack(padx=10, pady=10)
-
-#     selected_date = {"value": None}
-
-#     def confirm():
-#         selected_date["value"] = cal.get_date()
-#         top.destroy()
-
-#     from tkinter import Button
-#     Button(top, text="OK", command=confirm).pack(pady=10)
-
-#     top.mainloop()
-#     return selected_date["value"]
-
-
-
-# def main():
-#     try:
-#         # ---- Initialize Tk (hidden root window) ----
-#         root = Tk()
-#         root.title("Pathology Processor")
-#         root.withdraw()
-#         root.update()
-
-#         # ---- Ask user for input Excel file ----
-#         input_file = filedialog.askopenfilename(
-#             title="Select raw pathology Excel file",
-#             filetypes=[("Excel files", "*.xlsx *.xls")]
-#         )
-
-#         if not input_file:
-#             messagebox.showinfo("Cancelled", "No input file selected.")
-#             root.destroy()
-#             return
-
-#         # ---- Ask user for output Excel file ----
-#         output_file = filedialog.asksaveasfilename(
-#             title="Save processed pathology file",
-#             defaultextension=".xlsx",
-#             filetypes=[("Excel files", "*.xlsx")]
-#         )
-
-#         if not output_file:
-#             messagebox.showinfo("Cancelled", "No output file selected.")
-#             root.destroy()
-#             return
-        
-
-
-
-
-
-
-
-
-
-
-#         # ---- Ask user for date range ----
-#         # (simple version for now; UI date picker can be added later)
-#         begins = simpledialog.askstring(
-#                 "Start date",
-#                 "Enter start date (DD/MM/YYYY):",
-#                  parent=root
-# )
-
-#         ends = simpledialog.askstring(
-#             "End date",
-#              "Enter end date (DD/MM/YYYY):",
-#               parent=root
-# )
-
-#         if not begins or not ends:
-#             messagebox.showerror("Error", "Start and end dates are required.")
-#             root.destroy()
-#             return
-        
-#         if not validate_date(begins) or not validate_date(ends):
-#             messagebox.showerror(
-#              "Invalid date",
-#              "Dates must be in DD/MM/YYYY format."
-#     )
-#             root.destroy()
-#             return
-#         #
-
-
-
-#         messagebox.showinfo("Processing", "Processing file, please wait…")
-
-#         produce(
-#             begins=begins,
-#             ends=ends,
-#             file_path=input_file,
-#             file_output=output_file
-#         )
-
-#         messagebox.showinfo(
-#             "Success",
-#             "Processing complete!\n\nFile saved successfully."
-#         )
-
-#         root.destroy()
-
-#     except Exception as e:
-#         # ---- Show full error safely ----
-#         error_msg = "".join(traceback.format_exception(type(e), e, e.__traceback__))
-#         print(error_msg)  # visible when run from Terminal
-#         messagebox.showerror("Application Error", str(e))
-
-
-# if __name__ == "__main__":
-#     main()
