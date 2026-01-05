@@ -42,11 +42,55 @@ import traceback
 from tkinter import Tk, filedialog, messagebox, simpledialog
 from mains import produce
 
+from datetime import datetime
+
+import threading
+import queue
+import time
+from tkinter import *
+from tkinter import ttk, messagebox
+
+
+def validate_date(date_str: str) -> bool:
+    try:
+        datetime.strptime(date_str, "%d/%m/%Y")
+        return True
+    except ValueError:
+        return False
+
+
+from tkcalendar import Calendar
+
+def pick_date(title: str, parent) -> str:
+    top = Tk()
+    top.title(title)
+
+    cal = Calendar(
+        top,
+        selectmode="day",
+        date_pattern="dd/mm/yyyy"
+    )
+    cal.pack(padx=10, pady=10)
+
+    selected_date = {"value": None}
+
+    def confirm():
+        selected_date["value"] = cal.get_date()
+        top.destroy()
+
+    from tkinter import Button
+    Button(top, text="OK", command=confirm).pack(pady=10)
+
+    top.mainloop()
+    return selected_date["value"]
+
+
 
 def main():
     try:
         # ---- Initialize Tk (hidden root window) ----
         root = Tk()
+        root.title("Pathology Processor")
         root.withdraw()
         root.update()
 
@@ -72,6 +116,16 @@ def main():
             messagebox.showinfo("Cancelled", "No output file selected.")
             root.destroy()
             return
+        
+
+
+
+
+
+
+
+
+
 
         # ---- Ask user for date range ----
         # (simple version for now; UI date picker can be added later)
@@ -91,8 +145,38 @@ def main():
             messagebox.showerror("Error", "Start and end dates are required.")
             root.destroy()
             return
+        
+        if not validate_date(begins) or not validate_date(ends):
+            messagebox.showerror(
+             "Invalid date",
+             "Dates must be in DD/MM/YYYY format."
+    )
+            root.destroy()
+            return
+        # begins = pick_date("Select start date", root)
+        # ends = pick_date("Select end date", root)
+
+        # if not begins or not ends:
+        #     messagebox.showerror("Error", "Date selection cancelled.")
+        #     root.destroy()
+        #     return
+
+
+
+
+
+
+
+
+
+
 
         # ---- Run processing ----
+
+
+
+        messagebox.showinfo("Processing", "Processing file, please wait…")
+
         produce(
             begins=begins,
             ends=ends,
